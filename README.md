@@ -6,6 +6,7 @@
 [![Machine Learning](https://img.shields.io/badge/ML-Scikit--Learn%20DBSCAN-F7931E.svg)](https://scikit-learn.org/)
 [![Indian Legal Compliance](https://img.shields.io/badge/Compliance-BSA%20Sec--63%20%7C%20CCTNS-darkred.svg)](https://www.mha.gov.in/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/MayureshKrishnan/Sentinel-C4I)
 
 > **Autonomous Multi-Factor Intelligence Triaging, Spatial Kinematics, and Indian Law Enforcement Evidentiary Compliance for Missing Person Search Operations.**
 

@@ -6,7 +6,7 @@ RUN useradd -m -u 1000 user
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
     PYTHONPATH=/home/user/app/sentinel-backend:/home/user/app/sentinel-engine \
-    PORT=7860
+    PORT=10000
 
 WORKDIR $HOME/app
 
@@ -20,6 +20,6 @@ COPY --chown=user:user sentinel-engine/ /home/user/app/sentinel-engine/
 COPY --chown=user:user sentinel-frontend/ /home/user/app/sentinel-frontend/
 
 USER user
-EXPOSE 7860 8000
+EXPOSE 10000 8000 7860
 
-CMD ["sh", "-c", "cd sentinel-backend && uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "cd sentinel-backend && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]

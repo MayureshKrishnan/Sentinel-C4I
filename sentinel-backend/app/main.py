@@ -127,6 +127,12 @@ class TipInjectModel(BaseModel):
     confidence: Optional[float] = 0.8
     sighting_time: Optional[str] = None
 
+# --- Health Check Endpoints ---
+@app.get("/health")
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok", "service": "sentinel-c4i", "timestamp": datetime.utcnow().isoformat()}
+
 # --- Cases Endpoints ---
 @app.get("/api/v1/cases")
 def list_cases():

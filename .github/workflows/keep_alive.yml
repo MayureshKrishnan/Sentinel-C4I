@@ -1,0 +1,17 @@
+name: Sentinel 24-7 Keep-Alive
+
+on:
+  schedule:
+    # Runs every 12 minutes to ensure Render free tier instance never sleeps
+    - cron: '*/12 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Sentinel C4I Cloud Server
+        run: |
+          echo "Pinging Sentinel C4I Cloud Server..."
+          curl -s -f "https://sentinel-c4i.onrender.com/health" || curl -s -I "https://sentinel-c4i.onrender.com" || true
+          echo "Keep-alive ping sent successfully."
