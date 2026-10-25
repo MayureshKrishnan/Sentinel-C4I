@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sentinel V2 | Site Officer Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #020202;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+      overflow-x: hidden;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    #navbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 50;
+      background: rgba(0, 0, 0, 0.9);
+      border-bottom: 1px solid rgba(255, 0, 0, 0.3); /* Red accent for officer console */
+    }
+
+    .tech-panel {
+      background: #050505;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      position: relative;
+    }
+
+    input, textarea, select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      transition: all 0.2s ease;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #ffffff;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    /* File upload styling */
+    input[type=file]::file-selector-button {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      font-family: monospace;
+      margin-right: 16px;
+      cursor: pointer;
+    }
+      select option { background-color: #0f172a; color: #ffffff; }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+  <nav id="navbar" class="px-8 py-4 flex justify-between items-center">
+    <div class="font-bold tracking-widest uppercase text-sm flex items-center gap-3 text-red-500">
+      <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+      SITE OFFICER OVERRIDE
+    </div>
+    <div class="flex gap-4 items-center">
+      <div class="text-right mr-4">
+        <div class="text-xs font-bold text-white tracking-wide">Chief Officer Access</div>
+        <div class="text-[10px] text-gray-400 uppercase tracking-widest">Level 5 Clearance</div>
+      </div>
+      <a href="login.html" class="px-3 py-2 border border-zinc-700 text-zinc-300 font-mono text-xs hover:text-white transition-colors mr-2">Auth Terminal</a>
+      <a href="dashboard.html" class="px-4 py-2 border border-gray-600 text-gray-300 font-mono text-xs hover:bg-white hover:text-black transition-colors">
+        Return to Dashboard
+      </a>
+    </div>
+  </nav>
+
+  <main class="pt-28 px-8 max-w-6xl mx-auto">
+    
+    <div class="mb-10 border-b border-gray-800 pb-6">
+      <h1 class="text-3xl font-light tracking-tight text-white mb-2">Manual Data Injection</h1>
+      <p class="text-gray-400 font-mono text-xs">Data entered here bypasses standard validation and is piped directly to the PostGIS & DeepFace pipelines.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- FORM 1: Register New Target -->
+      <div class="tech-panel p-6">
+        <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-2">
+          <h2 class="text-lg font-medium text-white uppercase tracking-widest">Register Subject</h2>
+          <span class="text-[9px] bg-red-900/50 text-red-400 border border-red-500/50 px-2 py-1 rounded">TRAINS DEEPFACE MODEL</span>
+        </div>
+        
+        <form class="space-y-5">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">First Name</label>
+              <input type="text" class="w-full px-3 py-2 rounded-sm font-mono text-sm">
+            </div>
+            <div>
+              <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">Last Name</label>
+              <input type="text" class="w-full px-3 py-2 rounded-sm font-mono text-sm">
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">Age</label>
+              <input type="number" class="w-full px-3 py-2 rounded-sm font-mono text-sm">
+            </div>
+            <div class="col-span-2">
+              <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">Medical Conditions</label>
+              <input type="text" class="w-full px-3 py-2 rounded-sm font-mono text-sm" placeholder="e.g. Diabetic, Asthma">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">Reference Image (For AI Vectorization)</label>
+            <div class="border border-dashed border-gray-600 p-4 rounded bg-black text-center">
+              <input type="file" class="w-full text-xs text-gray-400" accept="image/*">
+            </div>
+            <p class="text-[9px] text-gray-500 mt-1 font-mono">This image will be hashed by DeepFace to create the baseline comparison vector.</p>
+          </div>
+
+          <button type="button" class="w-full py-3 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-gray-200 transition-all mt-4">
+            Initialize Subject Record
+          </button>
+        </form>
+      </div>
+
+      <!-- FORM 2: Manual Tip Injection -->
+      <div class="tech-panel p-6">
+        <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-2">
+          <h2 class="text-lg font-medium text-white uppercase tracking-widest">Inject Live Tip</h2>
+          <span class="text-[9px] bg-gray-800 text-gray-300 border border-gray-600 px-2 py-1 rounded">TRIGGERS SPATIAL PIPELINE</span>
+        </div>
+        
+        <form class="space-y-5">
+          <div>
+            <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">Target Subject ID</label>
+            <select class="w-full px-3 py-2 rounded-sm font-mono text-sm">
+              <option>P0-9942 (Arjun Mehta)</option>
+              <option>P0-1044 (Sarah Jenkins)</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">Latitude</label>
+              <input type="text" class="w-full px-3 py-2 rounded-sm font-mono text-sm" value="19.0330">
+            </div>
+            <div>
+              <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">Longitude</label>
+              <input type="text" class="w-full px-3 py-2 rounded-sm font-mono text-sm" value="73.0297">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">Observation Notes</label>
+            <textarea class="w-full px-3 py-2 rounded-sm font-mono text-sm h-20" placeholder="Enter manual intelligence report..."></textarea>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-mono text-gray-400 uppercase mb-1">CCTV / Field Image Upload</label>
+            <div class="border border-dashed border-gray-600 p-4 rounded bg-black text-center flex items-center justify-between">
+              <input type="file" class="text-xs text-gray-400" accept="image/*">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="force_eval" checked>
+                <label for="force_eval" class="text-[10px] font-mono text-red-400 uppercase">Force DeepFace Eval</label>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="w-full py-3 bg-red-600 text-white font-bold uppercase tracking-widest text-xs hover:bg-red-500 transition-all mt-4 border border-red-400">
+            Transmit to Pipeline &rarr;
+          </button>
+        </form>
+      </div>
+      
+    </div>
+    
+    <!-- System Logs / Overrides -->
+    <div class="mt-8 tech-panel p-6">
+      <h2 class="text-sm font-medium text-white uppercase tracking-widest mb-4 border-b border-gray-800 pb-2">Global System Status</h2>
+      <div class="grid grid-cols-4 gap-4 font-mono text-[10px]">
+        <div class="bg-black p-3 border border-gray-800">
+          <div class="text-gray-500 mb-1">PostGIS DB</div>
+          <div class="text-emerald-500">ONLINE (Sync: 0ms)</div>
+        </div>
+        <div class="bg-black p-3 border border-gray-800">
+          <div class="text-gray-500 mb-1">DeepFace Engine</div>
+          <div class="text-emerald-500">IDLE (GPU: RTX 4090)</div>
+        </div>
+        <div class="bg-black p-3 border border-gray-800">
+          <div class="text-gray-500 mb-1">LoRa Mesh Node</div>
+          <div class="text-yellow-500">WAITING FOR PACKETS</div>
+        </div>
+        <div class="bg-black p-3 border border-gray-800">
+          <div class="text-gray-500 mb-1">Access Control</div>
+          <div class="text-red-500">OFFICER OVERRIDE ACTIVE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security & Intrusion Detection System (IDS) -->
+    <div class="mt-4 tech-panel p-6 border-red-900/30">
+      <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
+        <h2 class="text-sm font-medium text-white uppercase tracking-widest">Active Threat Monitoring (IDS)</h2>
+        <span class="text-[9px] bg-emerald-900/50 text-emerald-400 border border-emerald-500/50 px-2 py-1 rounded animate-pulse">SYSTEM SECURE</span>
+      </div>
+      
+      <div class="bg-black border border-gray-800 p-4 rounded h-32 overflow-y-auto font-mono text-[10px] space-y-2">
+        <div class="flex gap-4">
+          <span class="text-gray-600">[14:28:44]</span>
+          <span class="text-emerald-500">[JWT_AUTH]</span>
+          <span class="text-gray-400">Token validated for Chief Officer (ID: 7742). AES-256 encryption active.</span>
+        </div>
+        <div class="flex gap-4">
+          <span class="text-gray-600">[14:28:12]</span>
+          <span class="text-yellow-500">[WAF_SHIELD]</span>
+          <span class="text-gray-400">Rate limit enforced on public endpoint /api/tips (IP: 104.28.XX.XX). 429 Too Many Requests.</span>
+        </div>
+        <div class="flex gap-4">
+          <span class="text-gray-600">[14:25:01]</span>
+          <span class="text-red-500">[SQL_INJECT]</span>
+          <span class="text-gray-400">Detected malformed payload in tip description. Pydantic validator stripped payload. Action: DROP.</span>
+        </div>
+        <div class="flex gap-4">
+          <span class="text-gray-600">[14:20:15]</span>
+          <span class="text-blue-400">[AUDIT_LOG]</span>
+          <span class="text-gray-400">Database backup executed and hashed for tamper-evident compliance.</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

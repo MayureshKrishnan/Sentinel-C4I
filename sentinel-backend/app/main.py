@@ -1,3 +1,6 @@
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import os
 import sys
 import math
@@ -449,6 +452,229 @@ def serve_html_file(filename: str):
             }
         )
     raise HTTPException(status_code=404, detail="File not found")
+
+
+# --- Security & Operative Clearance Registry ---
+OPERATIVES_REGISTRY = {
+    "ADMIN-MASTER": {"name": "Master Commander", "role": "admin", "status": "approved", "password": "Sentinel-Alpha-2026"},
+    "admin": {"name": "System Admin", "role": "admin", "status": "approved", "password": "admin"}
+}
+
+class RegisterRequest(BaseModel):
+    name: str
+    op_id: str
+    role: str
+    password: str
+
+class LoginRequest(BaseModel):
+    op_id: str
+    password: str
+
+@app.post("/api/v1/auth/register")
+async def register_operative(req: RegisterRequest, request: Request):
+    OPERATIVES_REGISTRY[req.op_id] = {
+        "name": req.name,
+        "op_id": req.op_id,
+        "role": req.role,
+        "password": req.password,
+        "status": "pending",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    
+    admin_email = "mayureshkrishnan684@gmail.com"
+    sender_email = os.environ.get("SMTP_USER", "mayureshkrishnan684@gmail.com")
+    sender_pass = os.environ.get("SMTP_PASS", "inhclrzoqycbtn").replace(" ", "")
+    
+    base_url = str(request.base_url).rstrip("/")
+    approve_url = f"{base_url}/api/v1/auth/approve?op_id={req.op_id}"
+    reject_url = f"{base_url}/api/v1/auth/reject?op_id={req.op_id}"
+
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = admin_email
+    msg['Subject'] = f"[ACTION REQUIRED] Sentinel V2 - Clearance Request for {req.op_id} ({req.name})"
+
+    html_email = f"""
+    <html>
+      <body style="font-family: monospace; background-color: #0a0a0c; color: #e2e8f0; padding: 24px; border: 1px solid #334155; border-radius: 8px;">
+        <h2 style="color: #60a5fa; margin-top: 0; letter-spacing: 1.5px;">SENTINEL V2 | TACTICAL SECURITY TERMINAL</h2>
+        <p>A new operative has requested access to the Sentinel C4I Decision Support Platform.</p>
+        
+        <div style="background-color: #1e293b; padding: 16px; border-left: 4px solid #3b82f6; margin-bottom: 24px; border-radius: 4px;">
+            <p style="margin: 4px 0;"><strong>Operative Name:</strong> {req.name}</p>
+            <p style="margin: 4px 0;"><strong>Operative ID:</strong> {req.op_id}</p>
+            <p style="margin: 4px 0;"><strong>Requested Role:</strong> {req.role}</p>
+            <p style="margin: 4px 0;"><strong>Security Level:</strong> RESTRICTED (Level 3 C4I Access)</p>
+        </div>
+        
+        <p style="color: #fbbf24;"><strong>STATUS: QUARANTINED (Pending Commander Approval)</strong></p>
+        
+        <div style="margin: 25px 0;">
+            <a href="{approve_url}" 
+               style="display: inline-block; padding: 12px 24px; background-color: #22c55e; color: #000000; 
+                      text-decoration: none; font-weight: bold; border-radius: 4px; margin-right: 12px; font-family: monospace;">
+               [ YES, ALLOW ACCESS ]
+            </a>
+            
+            <a href="{reject_url}" 
+               style="display: inline-block; padding: 12px 24px; background-color: #ef4444; color: #ffffff; 
+                      text-decoration: none; font-weight: bold; border-radius: 4px; font-family: monospace;">
+               [ REJECT & PURGE ]
+            </a>
+        </div>
+        
+        <hr style="border: none; border-top: 1px solid #334155; margin-top: 30px;">
+        <p style="font-size: 11px; color: #64748b; margin-top: 12px;">
+          Maharashtra Police Cyber & Spatial C4I Division • Node: Alpha-7 • Statutory Notice under BSA 2023 Sec-63
+        </p>
+      </body>
+    </html>
+    """
+    msg.attach(MIMEText(html_email, 'html'))
+
+    smtp_dispatched = False
+    smtp_err = ""
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=4)
+        server.starttls()
+        server.login(sender_email, sender_pass)
+        server.send_message(msg)
+        server.quit()
+        smtp_dispatched = True
+    except Exception as e587:
+        try:
+            server = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=4)
+            server.login(sender_email, sender_pass)
+            server.send_message(msg)
+            server.quit()
+            smtp_dispatched = True
+        except Exception as e465:
+            smtp_err = f"SMTP 587 ({e587}) / SMTP 465 ({e465})"
+
+    return {
+        "status": "pending",
+        "op_id": req.op_id,
+        "smtp_dispatched": smtp_dispatched,
+        "message": "Clearance request submitted. Real email dispatched to Commander via SMTP." if smtp_dispatched else "Clearance request registered in security quarantine.",
+        "approve_url": approve_url,
+        "reject_url": reject_url,
+        "error_detail": smtp_err if not smtp_dispatched else None
+    }
+
+@app.get("/api/v1/auth/status/{op_id}")
+async def get_operative_status(op_id: str):
+    op = OPERATIVES_REGISTRY.get(op_id)
+    if not op:
+        return {"status": "not_found", "approved": False}
+    return {
+        "status": op.get("status", "pending"),
+        "approved": op.get("status") == "approved",
+        "role": op.get("role", "operative"),
+        "name": op.get("name", op_id)
+    }
+
+@app.post("/api/v1/auth/login")
+async def login_operative(req: LoginRequest):
+    if (req.op_id == "ADMIN-MASTER" and req.password == "Sentinel-Alpha-2026") or (req.op_id.lower() == "admin" and req.password == "admin"):
+        return {"status": "success", "token": "master_admin_token", "role": "admin", "name": "Master Commander"}
+    
+    op = OPERATIVES_REGISTRY.get(req.op_id)
+    if not op:
+        raise HTTPException(status_code=401, detail="[ACCESS DENIED] Operative profile not registered.")
+    if op.get("password") != req.password:
+        raise HTTPException(status_code=401, detail="[ACCESS DENIED] Invalid Operative ID or Passkey.")
+    if op.get("status") == "rejected":
+        raise HTTPException(status_code=403, detail="[CLEARANCE DENIED] Operative clearance was rejected by Commander.")
+    if op.get("status") != "approved":
+        raise HTTPException(status_code=403, detail="[QUARANTINE] Operative clearance still pending Commander approval via SMTP email.")
+
+    return {
+        "status": "success",
+        "token": f"auth_token_{req.op_id}",
+        "role": op.get("role", "operative"),
+        "name": op.get("name", req.op_id)
+    }
+
+@app.get("/api/v1/auth/approve")
+async def approve_operative(op_id: str):
+    if op_id in OPERATIVES_REGISTRY:
+        OPERATIVES_REGISTRY[op_id]["status"] = "approved"
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Clearance Granted | Sentinel V2</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+      </head>
+      <body class="bg-[#0a0a0c] text-white font-mono flex items-center justify-center min-h-screen p-6">
+        <div class="max-w-lg w-full bg-zinc-950 border border-emerald-500/50 p-8 rounded-lg shadow-[0_0_50px_rgba(34,197,94,0.2)] text-center">
+          <div class="w-16 h-16 mx-auto mb-4 bg-emerald-950/80 border border-emerald-400 rounded-full flex items-center justify-center text-emerald-400 text-3xl">✓</div>
+          <h1 class="text-2xl font-bold tracking-widest text-emerald-400 uppercase mb-2">[ CLEARANCE GRANTED ]</h1>
+          <p class="text-zinc-400 text-xs tracking-wider mb-6">Operative <strong>{op_id}</strong> has been officially approved & activated in Sentinel C4I Security Directory.</p>
+          <div class="bg-zinc-900/80 border border-zinc-800 p-4 rounded text-left text-xs text-zinc-300 space-y-1 mb-6">
+            <div><span class="text-zinc-500">OPERATIVE ID:</span> {op_id}</div>
+            <div><span class="text-zinc-500">CLEARANCE:</span> LEVEL 3 DISPATCH GRANTED</div>
+            <div><span class="text-zinc-500">STATUS:</span> ACTIVE OPERATIONAL</div>
+          </div>
+          <a href="/login.html" class="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold uppercase tracking-widest text-xs rounded transition">
+            Proceed to Login Terminal →
+          </a>
+        </div>
+        <script>
+          try {{
+            localStorage.setItem('approved_{op_id}', 'true');
+            localStorage.setItem('sentinel_status', 'approved');
+          }} catch(e) {{}}
+        </script>
+      </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
+
+@app.get("/api/v1/auth/reject")
+async def reject_operative(op_id: str):
+    if op_id in OPERATIVES_REGISTRY:
+        OPERATIVES_REGISTRY[op_id]["status"] = "rejected"
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Clearance Denied | Sentinel V2</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+      </head>
+      <body class="bg-[#0a0a0c] text-white font-mono flex items-center justify-center min-h-screen p-6">
+        <div class="max-w-lg w-full bg-zinc-950 border border-red-500/50 p-8 rounded-lg shadow-[0_0_50px_rgba(239,68,68,0.2)] text-center">
+          <div class="w-16 h-16 mx-auto mb-4 bg-red-950/80 border border-red-400 rounded-full flex items-center justify-center text-red-400 text-3xl">✕</div>
+          <h1 class="text-2xl font-bold tracking-widest text-red-500 uppercase mb-2">[ CLEARANCE DENIED ]</h1>
+          <p class="text-zinc-400 text-xs tracking-wider mb-6">Operative <strong>{op_id}</strong> access request has been permanently purged and archived to security quarantine.</p>
+          <a href="/login.html" class="inline-block px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold uppercase tracking-widest text-xs rounded transition">
+            Return to Gateway
+          </a>
+        </div>
+        <script>
+          try {{
+            localStorage.setItem('approved_{op_id}', 'false');
+            localStorage.setItem('sentinel_status', 'rejected');
+          }} catch(e) {{}}
+        </script>
+      </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
+
+@app.get("/login.html")
+@app.get("/login")
+async def serve_login():
+    return serve_html_file("login.html")
+
+@app.get("/officer_console.html")
+@app.get("/officer_console")
+async def serve_officer_console():
+    return serve_html_file("officer_console.html")
 
 @app.get("/pipeline.html")
 @app.get("/pipeline")

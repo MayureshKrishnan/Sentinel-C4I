@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinel V2 | Operative Authentication & Clearance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #060608;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    .tech-panel {
+      background: linear-gradient(135deg, rgba(18, 18, 22, 0.95), rgba(10, 10, 12, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      backdrop-filter: blur(20px);
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .tech-panel::before, .tech-panel::after {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px;
+      border: 1px solid rgba(255,255,255,0.6);
+      pointer-events: none;
+    }
+    .tech-panel::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+    .tech-panel::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+    input, select {
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: white;
+      transition: all 0.2s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 12px rgba(59,130,246,0.3);
+      background: rgba(15,23,42,0.8);
+    }
+
+    .tab-btn {
+      color: #71717a;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      color: #ffffff;
+      border-bottom: 2px solid #3b82f6;
+      font-weight: 700;
+    }
+
+    .auth-form { display: none; animation: fadeIn 0.3s ease-out; }
+    .auth-form.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    select option { background-color: #0f172a; color: #ffffff; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- UNIFIED HEADER -->
+  <header class="h-16 w-full border-b border-zinc-800 flex items-center justify-between px-6 bg-[#080808]/95 backdrop-blur sticky top-0 z-50 shrink-0">
+    <div class="flex items-center gap-3 shrink-0">
+      <div class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_#3b82f6]"></div>
+      <a href="index.html" class="font-bold tracking-widest uppercase text-sm sm:text-base text-white flex items-center gap-2 hover:opacity-90 transition whitespace-nowrap">
+        Sentinel V2 <span class="hidden sm:inline-block text-xs font-mono px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-700 font-semibold tracking-normal">MAHARASHTRA POLICE C4I CORE</span>
+      </a>
+    </div>
+    
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-xs font-mono tracking-widest uppercase items-center shrink-0">
+      <a href="index.html" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Home</a>
+      <a href="dashboard.html" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Command Dashboard</a>
+      <a href="submit_tip.html" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Public Ingress</a>
+      <a href="pipeline.html" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Pipeline</a>
+      <a href="architecture.html" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Schema</a>
+      <a href="login.html" class="text-white border-b-2 border-blue-500 pb-1 font-bold whitespace-nowrap">Auth Terminal</a>
+    </nav>
+
+    <div class="flex items-center gap-4 shrink-0">
+      <a href="officer_console.html" class="px-3 py-1.5 bg-red-950/60 hover:bg-red-900 border border-red-500 text-red-200 text-xs font-mono font-bold rounded flex items-center gap-1.5 transition shadow whitespace-nowrap">
+        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Site Officer Override
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN AUTH CONTAINER -->
+  <main class="flex-1 flex items-center justify-center p-6 my-8">
+    <div class="w-full max-w-md">
+      
+      <div class="text-center mb-8">
+        <div class="inline-block px-3 py-1 bg-blue-950/60 border border-blue-500/40 rounded-full text-blue-400 font-mono text-[11px] tracking-wider uppercase mb-3">
+          SECURITY LEVEL: RESTRICTED ACCESS
+        </div>
+        <h1 class="text-3xl font-bold tracking-tight text-white mb-2">Tactical Gateway</h1>
+        <p class="text-zinc-400 font-mono text-xs uppercase tracking-widest">Identify Yourself to the Inter-Agency Mesh</p>
+      </div>
+
+      <div class="tech-panel p-8">
+        
+        <!-- Tabs -->
+        <div class="flex gap-6 mb-8 border-b border-zinc-800">
+          <button onclick="switchTab('login')" id="tab-login" class="tab-btn active pb-3 font-mono text-xs uppercase tracking-widest cursor-pointer">
+            1. Authenticate
+          </button>
+          <button onclick="switchTab('signup')" id="tab-signup" class="tab-btn pb-3 font-mono text-xs uppercase tracking-widest cursor-pointer">
+            2. Request Clearance (SMTP)
+          </button>
+        </div>
+
+        <!-- FORM 1: LOGIN -->
+        <form id="form-login" class="auth-form active space-y-5">
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2">Operative ID</label>
+            <input type="text" id="login-id" class="w-full px-4 py-3 rounded font-mono text-sm" placeholder="e.g. OP-7742 or admin" required>
+          </div>
+          
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2">Passkey</label>
+            <input type="password" id="login-pass" class="w-full px-4 py-3 rounded font-mono text-sm" placeholder="••••••••••••••••" required>
+          </div>
+
+          <!-- Quick Test Credentials Box -->
+          <div class="bg-zinc-900/80 border border-zinc-800 p-3 rounded text-[11px] font-mono text-zinc-400 space-y-1">
+            <div class="text-zinc-300 font-bold uppercase tracking-wider flex items-center gap-1.5 text-blue-400">
+              <span>⚡</span> Quick Panel Bypass Credentials:
+            </div>
+            <div>• Master ID: <code class="text-emerald-400 font-bold">admin</code> / Passkey: <code class="text-emerald-400 font-bold">admin</code></div>
+            <div>• Commander: <code class="text-cyan-400 font-bold">ADMIN-MASTER</code> / Pass: <code class="text-cyan-400 font-bold">Sentinel-Alpha-2026</code></div>
+          </div>
+
+          <!-- Error / Info Container -->
+          <div id="login-error" class="hidden text-xs font-mono p-3 rounded border"></div>
+
+          <div class="pt-2">
+            <button type="submit" id="btn-login" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest text-xs font-mono rounded transition shadow-[0_0_20px_rgba(59,130,246,0.3)] cursor-pointer">
+              Authenticate & Access HUD &rarr;
+            </button>
+          </div>
+          
+          <div class="text-center pt-2">
+            <a href="officer_console.html" class="text-[11px] font-mono text-red-400 hover:text-red-300 uppercase tracking-widest underline decoration-red-900 underline-offset-4">
+              [Direct Override: Site Officer Console]
+            </a>
+          </div>
+        </form>
+
+        <!-- FORM 2: REQUEST CLEARANCE (SMTP DISPATCH) -->
+        <form id="form-signup" class="auth-form space-y-5">
+          <div class="bg-blue-950/40 border border-blue-500/30 p-3 rounded text-xs font-mono text-blue-300 mb-2">
+            <strong>📧 SMTP Authorization Workflow:</strong> Submitting this form will send a live encrypted clearance request to Commander's Gmail (<code>mayureshkrishnan684@gmail.com</code>) with 1-click Approval buttons.
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">Full Legal Name</label>
+            <input type="text" id="signup-name" class="w-full px-4 py-2.5 rounded font-mono text-sm" placeholder="e.g. Inspector Sarah Jenkins" required>
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">Desired Operative ID</label>
+            <input type="text" id="signup-id" class="w-full px-4 py-2.5 rounded font-mono text-sm" placeholder="e.g. OP-101" required>
+          </div>
+          
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">Department Assignment / Role</label>
+            <select id="signup-role" class="w-full px-4 py-2.5 rounded font-mono text-sm text-zinc-200" required>
+              <option value="Field Operative (Level 1)">Field Operative (Level 1)</option>
+              <option value="Command Dispatch (Level 3)" selected>Command Dispatch (Level 3 C4I)</option>
+              <option value="Site Officer (Level 5 Override)">Site Officer (Level 5 Override)</option>
+              <option value="NDRF Spatial Coordinator">NDRF Spatial Coordinator</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1.5">Establish Passkey</label>
+            <input type="password" id="signup-pass" class="w-full px-4 py-2.5 rounded font-mono text-sm" placeholder="Create high-entropy secret" required>
+          </div>
+
+          <!-- Status Message Container -->
+          <div id="signup-status" class="hidden text-xs font-mono p-3 rounded border"></div>
+
+          <!-- Manual Direct Approve Link (For fail-proof demo if SMTP port filtered on campus wifi) -->
+          <div id="demo-override-box" class="hidden bg-zinc-900 border border-zinc-700 p-3 rounded text-xs font-mono space-y-2">
+            <div class="text-yellow-400 font-bold uppercase">⚡ Panel Demonstration Shortcut:</div>
+            <p class="text-zinc-400 text-[11px]">You can check the real email in your Gmail inbox, OR click the direct authorization link below:</p>
+            <a id="demo-approve-btn" href="#" target="_blank" class="inline-block px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-black font-bold uppercase rounded text-[11px]">
+              [ YES, ALLOW ACCESS (Commander Click) ]
+            </a>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" id="btn-signup" class="w-full py-3.5 border border-zinc-600 hover:border-blue-500 bg-transparent text-white font-bold uppercase tracking-widest text-xs font-mono rounded transition hover:bg-blue-600/10 cursor-pointer">
+              Initialize Profile & Dispatch SMTP Request
+            </button>
+          </div>
+        </form>
+        
+        <div class="mt-8 pt-6 border-t border-zinc-800 text-center">
+          <div class="text-[10px] font-mono text-zinc-600 uppercase tracking-wider">
+            All access events logged under Section 63 BSA 2023.<br>C4I Node: Alpha-7 // Protocol: Encrypted
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-zinc-900 py-4 px-6 text-center text-xs font-mono text-zinc-600">
+    SENTINEL V2 TACTICAL C4I PLATFORM • MAHARASHTRA POLICE CYBER DIVISION
+  </footer>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let pollInterval = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.auth-form').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById('form-' + tabId).classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+      
+      document.getElementById('login-error').classList.add('hidden');
+      document.getElementById('signup-status').classList.add('hidden');
+      document.getElementById('demo-override-box').classList.add('hidden');
+      if (pollInterval) clearInterval(pollInterval);
+    }
+
+    // 1. Handle Registration / SMTP Dispatch
+    document.getElementById('form-signup').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value.trim();
+      const opId = document.getElementById('signup-id').value.trim();
+      const role = document.getElementById('signup-role').value;
+      const pass = document.getElementById('signup-pass').value;
+      
+      const statusDiv = document.getElementById('signup-status');
+      const submitBtn = document.getElementById('btn-signup');
+      
+      statusDiv.innerHTML = "<div class='flex items-center gap-2'><div class='w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin'></div><span>Connecting to SMTP server and dispatching clearance email to Commander...</span></div>";
+      statusDiv.className = "bg-blue-950/70 border border-blue-500/60 text-blue-300 text-xs font-mono p-3 rounded";
+      statusDiv.classList.remove('hidden');
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, op_id: opId, role, password: pass })
+        });
+        
+        const data = await response.json();
+        
+        // Save locally for instant fallback
+        localStorage.setItem('sentinel_op_id', opId);
+        localStorage.setItem('sentinel_pass', pass);
+        localStorage.setItem('sentinel_status', 'pending');
+        
+        let msg = `<strong>Clearance Request Registered for [${opId}].</strong><br>`;
+        if (data.smtp_dispatched) {
+          msg += `✓ Real authorization email dispatched to Commander's Gmail (<code>mayureshkrishnan684@gmail.com</code>).`;
+        } else {
+          msg += `⚠️ Request stored in security ledger (SMTP direct socket: ${data.error_detail || 'Campus network filtered'}).`;
+        }
+        msg += `<br><span class='text-yellow-400 animate-pulse'>Awaiting Commander's decision... Automatically checking every 2 seconds.</span>`;
+        
+        statusDiv.className = "bg-emerald-950/60 border border-emerald-500 text-emerald-300 text-xs font-mono p-3 rounded";
+        statusDiv.innerHTML = msg;
+
+        // Show Demo shortcut link
+        const demoBox = document.getElementById('demo-override-box');
+        const demoBtn = document.getElementById('demo-approve-btn');
+        if (data.approve_url) {
+          demoBtn.href = data.approve_url;
+          demoBox.classList.remove('hidden');
+        }
+
+        // Start live polling to detect when the Commander approves (via email click or shortcut)
+        if (pollInterval) clearInterval(pollInterval);
+        pollInterval = setInterval(async () => {
+          try {
+            const checkRes = await fetch(`${API_BASE}/api/v1/auth/status/${encodeURIComponent(opId)}`);
+            const checkData = await checkRes.json();
+            
+            // Also check localStorage if opened in same browser tab
+            const localApproved = localStorage.getItem('approved_' + opId) === 'true';
+            
+            if (checkData.approved || localApproved) {
+              clearInterval(pollInterval);
+              statusDiv.className = "bg-emerald-900 border border-emerald-400 text-white text-xs font-mono p-4 rounded font-bold shadow-lg";
+              statusDiv.innerHTML = "✓ [CLEARANCE GRANTED BY COMMANDER] Profile activated! Redirecting to Command HUD...";
+              setTimeout(() => {
+                localStorage.setItem('auth_token', 'token_' + opId);
+                localStorage.setItem('sentinel_role', role);
+                window.location.href = "dashboard.html";
+              }, 1200);
+            }
+          } catch(err) {}
+        }, 2000);
+
+      } catch (err) {
+        statusDiv.className = "bg-red-950/70 border border-red-500 text-red-300 text-xs font-mono p-3 rounded";
+        statusDiv.innerText = `[OFFLINE] Server endpoint unreachable: ${err.message}`;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    // 2. Handle Login
+    document.getElementById('form-login').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const opId = document.getElementById('login-id').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      const errorDiv = document.getElementById('login-error');
+      
+      // Master Admin Bypass Check
+      if ((opId === 'ADMIN-MASTER' && pass === 'Sentinel-Alpha-2026') || (opId.toLowerCase() === 'admin' && pass === 'admin')) {
+        localStorage.setItem('auth_token', 'master_admin_token');
+        localStorage.setItem('sentinel_role', 'admin');
+        window.location.href = "dashboard.html";
+        return;
+      }
+
+      // Check backend login endpoint
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ op_id: opId, password: pass })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('auth_token', data.token || 'token_' + opId);
+          localStorage.setItem('sentinel_role', data.role || 'officer');
+          window.location.href = "dashboard.html";
+          return;
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          const detail = errData.detail || "Authentication failed.";
+          errorDiv.innerText = detail;
+          errorDiv.className = "bg-red-950/70 border border-red-500 text-red-300 text-xs font-mono p-3 rounded";
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+      } catch (err) {
+        // Fallback to client-side localStorage validation if offline
+        const storedId = localStorage.getItem('sentinel_op_id');
+        const storedPass = localStorage.getItem('sentinel_pass');
+        const isApproved = localStorage.getItem('approved_' + opId) === 'true';
+        const isRejected = localStorage.getItem('approved_' + opId) === 'false';
+
+        if (!storedId || opId !== storedId || pass !== storedPass) {
+          errorDiv.innerText = "[ACCESS DENIED] Invalid Operative ID or Passkey.";
+        } else if (isRejected) {
+          errorDiv.innerText = "[CLEARANCE DENIED] Your request was permanently rejected by Master Admin.";
+        } else if (!isApproved) {
+          errorDiv.innerText = "[QUARANTINE] Clearance pending Commander approval via SMTP email.";
+        } else {
+          localStorage.setItem('auth_token', 'mock_token_' + opId);
+          window.location.href = "dashboard.html";
+          return;
+        }
+        errorDiv.className = "bg-red-950/70 border border-red-500 text-red-300 text-xs font-mono p-3 rounded";
+        errorDiv.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
