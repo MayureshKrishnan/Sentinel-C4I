@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="auth_check.js"></script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -93,6 +94,9 @@
     </nav>
 
     <div class="flex items-center gap-4 shrink-0">
+      <button onclick="sentinelLogout()" title="Terminate Operative Session" class="px-3 py-1.5 bg-red-950/70 hover:bg-red-900 border border-red-500/80 text-red-200 text-xs font-mono font-bold rounded flex items-center gap-1.5 transition shadow whitespace-nowrap cursor-pointer">
+        <span>🔒</span> Logout
+      </button>
       <button onclick="openBsaModal()" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-500 text-zinc-100 text-xs font-mono font-bold rounded flex items-center gap-1.5 transition shadow whitespace-nowrap cursor-pointer">
         <span>⚖️</span> BSA Sec-63 Certificate
       </button>

@@ -483,9 +483,11 @@ async def register_operative(req: RegisterRequest, request: Request):
     
     admin_email = "mayureshkrishnan684@gmail.com"
     sender_email = os.environ.get("SMTP_USER", "mayureshkrishnan684@gmail.com")
-    sender_pass = os.environ.get("SMTP_PASS", "inhclrzoqycbtn").replace(" ", "")
+    sender_pass = os.environ.get("SMTP_PASS", "inhc lrzo uyqg cbtn").replace(" ", "")
     
-    base_url = str(request.base_url).rstrip("/")
+    proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+    host = request.headers.get("x-forwarded-host", request.url.netloc)
+    base_url = f"{proto}://{host}".rstrip("/")
     approve_url = f"{base_url}/api/v1/auth/approve?op_id={req.op_id}"
     reject_url = f"{base_url}/api/v1/auth/reject?op_id={req.op_id}"
 

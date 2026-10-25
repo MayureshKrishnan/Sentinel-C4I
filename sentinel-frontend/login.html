@@ -96,13 +96,16 @@
   <main class="flex-1 flex items-center justify-center p-6 my-8">
     <div class="w-full max-w-md">
       
-      <div class="text-center mb-8">
+      <div class="text-center mb-6">
         <div class="inline-block px-3 py-1 bg-blue-950/60 border border-blue-500/40 rounded-full text-blue-400 font-mono text-[11px] tracking-wider uppercase mb-3">
           SECURITY LEVEL: RESTRICTED ACCESS
         </div>
         <h1 class="text-3xl font-bold tracking-tight text-white mb-2">Tactical Gateway</h1>
         <p class="text-zinc-400 font-mono text-xs uppercase tracking-widest">Identify Yourself to the Inter-Agency Mesh</p>
       </div>
+
+      <!-- Security Flash Banner (Alerts unauthenticated visitors) -->
+      <div id="security-banner" class="hidden font-mono text-xs p-3 rounded mb-6 text-center"></div>
 
       <div class="tech-panel p-8">
         
@@ -156,7 +159,7 @@
         <!-- FORM 2: REQUEST CLEARANCE (SMTP DISPATCH) -->
         <form id="form-signup" class="auth-form space-y-5">
           <div class="bg-blue-950/40 border border-blue-500/30 p-3 rounded text-xs font-mono text-blue-300 mb-2">
-            <strong>📧 SMTP Authorization Workflow:</strong> Submitting this form will send a live encrypted clearance request to Commander's Gmail (<code>mayureshkrishnan684@gmail.com</code>) with 1-click Approval buttons.
+            <strong>📧 Real SMTP Authorization:</strong> Submitting will dispatch an encrypted HTML clearance email via Gmail SMTP to Commander (<code>mayureshkrishnan684@gmail.com</code>). When the Commander taps <code>[ YES, ALLOW ACCESS ]</code> on their phone, this screen will instantly grant clearance in real-time!
           </div>
 
           <div>
@@ -187,12 +190,12 @@
           <!-- Status Message Container -->
           <div id="signup-status" class="hidden text-xs font-mono p-3 rounded border"></div>
 
-          <!-- Manual Direct Approve Link (For fail-proof demo if SMTP port filtered on campus wifi) -->
+          <!-- Manual Direct Approve Link (For quick demonstration) -->
           <div id="demo-override-box" class="hidden bg-zinc-900 border border-zinc-700 p-3 rounded text-xs font-mono space-y-2">
-            <div class="text-yellow-400 font-bold uppercase">⚡ Panel Demonstration Shortcut:</div>
-            <p class="text-zinc-400 text-[11px]">You can check the real email in your Gmail inbox, OR click the direct authorization link below:</p>
+            <div class="text-yellow-400 font-bold uppercase">⚡ Commander Signal Link:</div>
+            <p class="text-zinc-400 text-[11px]">Check the real email in your Gmail inbox, or click below to simulate the Commander's approval signal:</p>
             <a id="demo-approve-btn" href="#" target="_blank" class="inline-block px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-black font-bold uppercase rounded text-[11px]">
-              [ YES, ALLOW ACCESS (Commander Click) ]
+              [ YES, ALLOW ACCESS (Click Signal) ]
             </a>
           </div>
 
@@ -221,6 +224,21 @@
     const API_BASE = window.location.origin;
     let pollInterval = null;
 
+    // Detect Security Restrictions / Logouts from URL
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const banner = document.getElementById('security-banner');
+      if (params.get('restricted')) {
+        banner.innerHTML = "⚠️ <strong>[CLEARANCE REQUIRED]</strong> Access to the Tactical Command Dashboard is restricted to authenticated operatives. Please login or request clearance below.";
+        banner.className = "bg-amber-950/80 border border-amber-500 text-amber-300 text-xs font-mono p-3 rounded mb-6 text-center animate-pulse";
+        banner.classList.remove('hidden');
+      } else if (params.get('logged_out')) {
+        banner.innerHTML = "✓ <strong>[SESSION TERMINATED]</strong> Operative credentials cleared from local terminal. Please login again to resume session.";
+        banner.className = "bg-emerald-950/80 border border-emerald-500 text-emerald-300 text-xs font-mono p-3 rounded mb-6 text-center";
+        banner.classList.remove('hidden');
+      }
+    });
+
     function switchTab(tabId) {
       document.querySelectorAll('.auth-form').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -234,6 +252,14 @@
       if (pollInterval) clearInterval(pollInterval);
     }
 
+    function completeLogin(token, role) {
+      localStorage.setItem('auth_token', token || 'authenticated_session');
+      localStorage.setItem('sentinel_role', role || 'operative');
+      const target = sessionStorage.getItem('redirect_after_login') || 'dashboard.html';
+      sessionStorage.removeItem('redirect_after_login');
+      window.location.href = target;
+    }
+
     // 1. Handle Registration / SMTP Dispatch
     document.getElementById('form-signup').addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -245,7 +271,7 @@
       const statusDiv = document.getElementById('signup-status');
       const submitBtn = document.getElementById('btn-signup');
       
-      statusDiv.innerHTML = "<div class='flex items-center gap-2'><div class='w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin'></div><span>Connecting to SMTP server and dispatching clearance email to Commander...</span></div>";
+      statusDiv.innerHTML = "<div class='flex items-center gap-2'><div class='w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin'></div><span>Connecting to Gmail SMTP server and dispatching clearance email to Commander...</span></div>";
       statusDiv.className = "bg-blue-950/70 border border-blue-500/60 text-blue-300 text-xs font-mono p-3 rounded";
       statusDiv.classList.remove('hidden');
       submitBtn.disabled = true;
@@ -259,18 +285,17 @@
         
         const data = await response.json();
         
-        // Save locally for instant fallback
         localStorage.setItem('sentinel_op_id', opId);
         localStorage.setItem('sentinel_pass', pass);
         localStorage.setItem('sentinel_status', 'pending');
         
         let msg = `<strong>Clearance Request Registered for [${opId}].</strong><br>`;
         if (data.smtp_dispatched) {
-          msg += `✓ Real authorization email dispatched to Commander's Gmail (<code>mayureshkrishnan684@gmail.com</code>).`;
+          msg += `✓ <strong>Real email dispatched to Commander</strong> (<code>mayureshkrishnan684@gmail.com</code>).`;
         } else {
-          msg += `⚠️ Request stored in security ledger (SMTP direct socket: ${data.error_detail || 'Campus network filtered'}).`;
+          msg += `⚠️ Request logged in security quarantine (SMTP note: ${data.error_detail || 'Campus network filtered'}).`;
         }
-        msg += `<br><span class='text-yellow-400 animate-pulse'>Awaiting Commander's decision... Automatically checking every 2 seconds.</span>`;
+        msg += `<br><span class='text-yellow-400 animate-pulse font-bold'>Awaiting Commander's decision in Gmail... Listening for approval signal in real-time.</span>`;
         
         statusDiv.className = "bg-emerald-950/60 border border-emerald-500 text-emerald-300 text-xs font-mono p-3 rounded";
         statusDiv.innerHTML = msg;
@@ -283,24 +308,21 @@
           demoBox.classList.remove('hidden');
         }
 
-        // Start live polling to detect when the Commander approves (via email click or shortcut)
+        // Start real-time polling to detect when the Commander clicks the email link
         if (pollInterval) clearInterval(pollInterval);
         pollInterval = setInterval(async () => {
           try {
             const checkRes = await fetch(`${API_BASE}/api/v1/auth/status/${encodeURIComponent(opId)}`);
             const checkData = await checkRes.json();
             
-            // Also check localStorage if opened in same browser tab
             const localApproved = localStorage.getItem('approved_' + opId) === 'true';
             
             if (checkData.approved || localApproved) {
               clearInterval(pollInterval);
-              statusDiv.className = "bg-emerald-900 border border-emerald-400 text-white text-xs font-mono p-4 rounded font-bold shadow-lg";
-              statusDiv.innerHTML = "✓ [CLEARANCE GRANTED BY COMMANDER] Profile activated! Redirecting to Command HUD...";
+              statusDiv.className = "bg-emerald-900 border border-emerald-400 text-white text-xs font-mono p-4 rounded font-bold shadow-lg animate-bounce";
+              statusDiv.innerHTML = "✓ [SIGNAL RECEIVED: CLEARANCE GRANTED BY COMMANDER] Profile activated! Redirecting to Command Dashboard...";
               setTimeout(() => {
-                localStorage.setItem('auth_token', 'token_' + opId);
-                localStorage.setItem('sentinel_role', role);
-                window.location.href = "dashboard.html";
+                completeLogin('token_' + opId, role);
               }, 1200);
             }
           } catch(err) {}
@@ -323,9 +345,7 @@
       
       // Master Admin Bypass Check
       if ((opId === 'ADMIN-MASTER' && pass === 'Sentinel-Alpha-2026') || (opId.toLowerCase() === 'admin' && pass === 'admin')) {
-        localStorage.setItem('auth_token', 'master_admin_token');
-        localStorage.setItem('sentinel_role', 'admin');
-        window.location.href = "dashboard.html";
+        completeLogin('master_admin_token', 'admin');
         return;
       }
 
@@ -339,9 +359,7 @@
         
         if (response.ok) {
           const data = await response.json();
-          localStorage.setItem('auth_token', data.token || 'token_' + opId);
-          localStorage.setItem('sentinel_role', data.role || 'officer');
-          window.location.href = "dashboard.html";
+          completeLogin(data.token || 'token_' + opId, data.role || 'officer');
           return;
         } else {
           const errData = await response.json().catch(() => ({}));
@@ -365,8 +383,7 @@
         } else if (!isApproved) {
           errorDiv.innerText = "[QUARANTINE] Clearance pending Commander approval via SMTP email.";
         } else {
-          localStorage.setItem('auth_token', 'mock_token_' + opId);
-          window.location.href = "dashboard.html";
+          completeLogin('mock_token_' + opId, 'officer');
           return;
         }
         errorDiv.className = "bg-red-950/70 border border-red-500 text-red-300 text-xs font-mono p-3 rounded";
