@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta charset="UTF-8">
+  <title>Sentinel V2 | Architecture Schema</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0a0a0c;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+      overflow-x: hidden;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    
+
+    .schema-node {
+      background: #050505;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 40px;
+      position: relative;
+      transition: all 0.4s ease;
+    }
+    
+    .schema-node:hover {
+      background: #0a0a0c;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .animate-flow {
+      stroke-dasharray: 8 100;
+      animation: flowAnim 2s linear infinite;
+    }
+    @keyframes flowAnim {
+      0% { stroke-dashoffset: 108; }
+      100% { stroke-dashoffset: 0; }
+    }
+    
+    .animate-flow-reverse {
+      stroke-dasharray: 8 100;
+      animation: flowAnimRev 2s linear infinite;
+    }
+    @keyframes flowAnimRev {
+      0% { stroke-dashoffset: -108; }
+      100% { stroke-dashoffset: 0; }
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-[#050505] text-[#f4f4f5] flex flex-col">
+
+        <!-- Top Navigation Bar (Consistent Across Entire Sentinel V2 Platform) -->
+  <header class="h-16 w-full border-b border-zinc-800 flex items-center justify-between px-6 bg-[#080808]/95 backdrop-blur sticky top-0 z-50 shrink-0">
+    <div class="flex items-center gap-3 shrink-0">
+      <div class="w-2.5 h-2.5 rounded-full bg-white animate-pulse shadow-[0_0_10px_#ffffff]"></div>
+      <a href="index.html?v=3" class="font-bold tracking-widest uppercase text-sm sm:text-base text-white flex items-center gap-2 hover:opacity-90 transition whitespace-nowrap">
+        Sentinel V2 <span class="hidden sm:inline-block text-xs font-mono px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-700 font-semibold tracking-normal">MAHARASHTRA POLICE C4I CORE</span>
+      </a>
+    </div>
+    
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-xs font-mono tracking-widest uppercase items-center shrink-0">
+      <a href="index.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Home</a>
+      <a href="dashboard.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Command Dashboard</a>
+      <a href="submit_tip.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Public Ingress Portal</a>
+      <a href="pipeline.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Pipeline</a>
+      <a href="architecture.html?v=3" class="text-white border-b-2 border-white pb-1 font-bold whitespace-nowrap">Schema</a>
+    </nav>
+
+    <div class="flex items-center gap-4 shrink-0">
+      <a href="dashboard.html?v=3#bsa-modal" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-500 text-zinc-100 text-xs font-mono font-bold rounded flex items-center gap-1.5 transition shadow whitespace-nowrap">
+        <span>⚖️</span> BSA Sec-63 Certificate
+      </a>
+      <div class="text-right hidden sm:block whitespace-nowrap">
+        <div class="text-xs font-mono text-white tracking-wider font-bold">STATION: CMD-OP1</div>
+        <div class="text-[11px] text-emerald-400 font-mono uppercase flex items-center gap-1.5 justify-end font-semibold">
+          <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>C4I Operational
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-6xl mx-auto px-6 py-10">
+    
+    <div class="mb-24">
+      <h1 class="text-7xl font-light tracking-tighter text-white mb-6">System Architecture</h1>
+      <p class="text-gray-500 text-2xl font-light max-w-3xl">A high-performance pipeline bridging edge hardware, biometric AI, and spatial logic.</p>
+    </div>
+
+    <!-- MASSIVE MINIMALIST ARCHITECTURE FLOW -->
+    <div class="w-full flex flex-col relative">
+
+      <!-- TIER 01: EDGE -->
+      <div class="flex gap-8 w-full z-10">
+        <div class="schema-node flex-1">
+          <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">Tier 01 // Hardware Edge</div>
+          <h2 class="text-3xl font-light text-white mb-2">LoRaWAN NodeMCU</h2>
+          <p class="text-gray-400 font-light mb-8">915MHz offline mesh network. Transmits heavily compressed 15-byte GPS packets during total cellular infrastructure failure.</p>
+          <div class="font-mono text-xs text-gray-500 bg-black p-4 border border-gray-800">C++ / SPI / LoRa.h</div>
+        </div>
+        
+        <div class="schema-node flex-1">
+          <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">Tier 01 // Public Edge</div>
+          <h2 class="text-3xl font-light text-white mb-2">React Native App</h2>
+          <p class="text-gray-400 font-light mb-8">Public-facing mobile application for uploading real-time tips, CCTV frames, and spatial sightings over standard cellular.</p>
+          <div class="font-mono text-xs text-gray-500 bg-black p-4 border border-gray-800">TypeScript / React Native</div>
+        </div>
+      </div>
+
+      <!-- SVG CONNECTORS 1 -->
+      <div class="w-full h-32 -my-2 relative z-0">
+        <svg class="w-full h-full" viewBox="0 0 1000 100" preserveAspectRatio="none">
+          <!-- Static Base Lines -->
+          <path d="M 250 0 C 250 80, 500 20, 500 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+          <path d="M 750 0 C 750 80, 500 20, 500 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+          <!-- Animated Data Flow -->
+          <path d="M 250 0 C 250 80, 500 20, 500 100" fill="none" stroke="#ffffff" stroke-width="2" class="animate-flow" />
+          <path d="M 750 0 C 750 80, 500 20, 500 100" fill="none" stroke="#ffffff" stroke-width="2" class="animate-flow" style="animation-delay: 1s;" />
+        </svg>
+      </div>
+
+      <!-- TIER 02: CORE COMPUTE -->
+      <div class="w-full z-10 flex">
+        <div class="schema-node w-full flex flex-col md:flex-row gap-12 items-center">
+          <div class="flex-1 border-r border-gray-800 pr-12">
+            <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">Tier 02 // API Gateway</div>
+            <h2 class="text-4xl font-light text-white mb-4">FastAPI Event Loop</h2>
+            <p class="text-gray-400 font-light mb-6 text-lg">Asynchronous Python backend built on Uvicorn. Handles incoming hardware webhooks, authenticates JWTs, and streams live data to the dashboard via WebSockets.</p>
+            <div class="font-mono text-xs text-gray-500">Python 3.10 / Pydantic / WebSockets</div>
+          </div>
+          
+          <div class="flex-1 pl-4">
+            <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">Tier 02 // AI Processor</div>
+            <h2 class="text-4xl font-light text-white mb-4">DeepFace Engine</h2>
+            <p class="text-gray-400 font-light mb-6 text-lg">VGG-Face biometric model. Computes cosine similarity between injected CCTV frames and the P0 target's baseline hash to automatically discard false positives.</p>
+            <div class="font-mono text-xs text-gray-500">TensorFlow / DeepFace / Cosine Distance</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SVG CONNECTORS 2 -->
+      <div class="w-full h-32 -my-2 relative z-0">
+        <svg class="w-full h-full" viewBox="0 0 1000 100" preserveAspectRatio="none">
+          <!-- Static Base Lines -->
+          <path d="M 500 0 C 500 80, 250 20, 250 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+          <path d="M 500 0 C 500 80, 750 20, 750 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+          <!-- Animated Data Flow -->
+          <path d="M 500 0 C 500 80, 250 20, 250 100" fill="none" stroke="#ffffff" stroke-width="2" class="animate-flow" />
+          <path d="M 500 0 C 500 80, 750 20, 750 100" fill="none" stroke="#ffffff" stroke-width="2" class="animate-flow" style="animation-delay: 0.5s;" />
+        </svg>
+      </div>
+
+      <!-- TIER 03: PERSISTENCE & DASHBOARD -->
+      <div class="flex gap-8 w-full z-10">
+        <div class="schema-node flex-1">
+          <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">Tier 03 // Persistence</div>
+          <h2 class="text-3xl font-light text-white mb-2">PostgreSQL + PostGIS</h2>
+          <p class="text-gray-400 font-light mb-8">Stores spatial point geometries. Executes Tobler's hiking function to mathematically project search radiuses.</p>
+          <pre class="bg-black border border-gray-800 p-6 font-mono text-[10px] text-gray-500">
+CREATE TABLE tips (
+    id UUID PRIMARY KEY,
+    location geometry(Point, 4326),
+    p0_match BOOLEAN,
+    created_at TIMESTAMPTZ
+);
+          </pre>
+        </div>
+        
+        <div class="schema-node flex-1">
+          <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">Tier 03 // Command & Control</div>
+          <h2 class="text-3xl font-light text-white mb-2">Tactical Dashboard</h2>
+          <p class="text-gray-400 font-light mb-8">The final presentation layer. Plots real-time coordinates over an interactive, dark-mode Esri map using Leaflet.js.</p>
+          <div class="bg-black border border-gray-800 p-6 flex flex-col gap-2">
+            <div class="flex justify-between items-center border-b border-gray-900 pb-2">
+              <span class="text-xs font-mono text-gray-500">Leaflet.js Engine</span>
+              <span class="text-[9px] text-emerald-500">ACTIVE</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-gray-900 pb-2">
+              <span class="text-xs font-mono text-gray-500">WebSocket Link</span>
+              <span class="text-[9px] text-emerald-500">LISTENING</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-mono text-gray-500">PuLP Optimizer</span>
+              <span class="text-[9px] text-emerald-500">STANDBY</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

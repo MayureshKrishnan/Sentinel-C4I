@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta charset="UTF-8">
+  <title>Sentinel V2 | Pipeline & Terminology</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0a0a0c;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+      overflow-x: hidden;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    
+
+    .tech-panel {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(10, 10, 10, 0.95));
+      border: 1px solid rgba(192, 192, 192, 0.25); box-shadow: inset 0 0 30px rgba(192, 192, 192, 0.03);
+      border-radius: 8px;
+    }
+
+    .step-box {
+      border-left: 2px solid rgba(255,255,255,0.2);
+      padding-left: 32px;
+      position: relative;
+      padding-bottom: 48px;
+    }
+    
+    .step-box::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 0;
+      width: 10px;
+      height: 10px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 15px #ffffff;
+    }
+
+    .step-box:last-child {
+      border-left-color: transparent;
+      padding-bottom: 0;
+    }
+
+    /* Minimalist Table Styling */
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.2); font-family: monospace; font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: 2px; }
+    td { padding: 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-[#050505] text-[#f4f4f5] flex flex-col">
+
+        <!-- Top Navigation Bar (Consistent Across Entire Sentinel V2 Platform) -->
+  <header class="h-16 w-full border-b border-zinc-800 flex items-center justify-between px-6 bg-[#080808]/95 backdrop-blur sticky top-0 z-50 shrink-0">
+    <div class="flex items-center gap-3 shrink-0">
+      <div class="w-2.5 h-2.5 rounded-full bg-white animate-pulse shadow-[0_0_10px_#ffffff]"></div>
+      <a href="index.html?v=3" class="font-bold tracking-widest uppercase text-sm sm:text-base text-white flex items-center gap-2 hover:opacity-90 transition whitespace-nowrap">
+        Sentinel V2 <span class="hidden sm:inline-block text-xs font-mono px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-700 font-semibold tracking-normal">MAHARASHTRA POLICE C4I CORE</span>
+      </a>
+    </div>
+    
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-xs font-mono tracking-widest uppercase items-center shrink-0">
+      <a href="index.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Home</a>
+      <a href="dashboard.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Command Dashboard</a>
+      <a href="submit_tip.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Public Ingress Portal</a>
+      <a href="pipeline.html?v=3" class="text-white border-b-2 border-white pb-1 font-bold whitespace-nowrap">Pipeline</a>
+      <a href="architecture.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Schema</a>
+    </nav>
+
+    <div class="flex items-center gap-4 shrink-0">
+      <a href="dashboard.html?v=3#bsa-modal" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-500 text-zinc-100 text-xs font-mono font-bold rounded flex items-center gap-1.5 transition shadow whitespace-nowrap">
+        <span>⚖️</span> BSA Sec-63 Certificate
+      </a>
+      <div class="text-right hidden sm:block whitespace-nowrap">
+        <div class="text-xs font-mono text-white tracking-wider font-bold">STATION: CMD-OP1</div>
+        <div class="text-[11px] text-emerald-400 font-mono uppercase flex items-center gap-1.5 justify-end font-semibold">
+          <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>C4I Operational
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-10">
+    
+    <div class="mb-24">
+      <h1 class="text-6xl font-light tracking-tighter text-white mb-6">Data Intelligence Pipeline</h1>
+      <p class="text-gray-500 text-xl font-light max-w-3xl">Understanding how raw chaos is transformed into actionable tactical intelligence.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-24">
+      
+      <!-- Left Column: The Pipeline -->
+      <div>
+        <h2 class="text-2xl font-medium text-white mb-12 uppercase tracking-widest text-sm">1. Processing Pipeline</h2>
+        
+        <div class="mt-8">
+          
+          <div class="step-box">
+            <h3 class="text-xl font-medium text-white mb-2">Phase 1: Raw Ingestion</h3>
+            <p class="text-gray-400 font-light leading-relaxed mb-4">
+              Intelligence enters the system via two streams: 
+              <span class="text-white font-medium">Public</span> (React Native app sending tips over 5G/4G) and 
+              <span class="text-white font-medium">Tactical</span> (NodeMCU hardware sending offline GPS pings via 915MHz LoRa mesh).
+            </p>
+            <div class="bg-black border border-gray-800 p-4 font-mono text-[10px] text-gray-500 rounded">
+              DATA: { lat: 19.033, lng: 73.029, img: <b64_hash>, timestamp: int }
+            </div>
+          </div>
+
+          <div class="step-box">
+            <h3 class="text-xl font-medium text-white mb-2">Phase 2: DeepFace Biometric Triage</h3>
+            <p class="text-gray-400 font-light leading-relaxed mb-4">
+              Before a tip hits the dashboard, it is intercepted by the ML pipeline. If the tip contains CCTV or smartphone imagery, the VGG-Face model extracts a 2622-dimensional facial vector and computes the cosine distance against the missing subject's baseline vector.
+            </p>
+            <div class="bg-black border border-gray-800 p-4 font-mono text-[10px] text-emerald-500 rounded">
+              EVAL: Cosine Distance = 0.18 -> MATCH CONFIRMED (P0 Status Assigned)
+            </div>
+          </div>
+
+          <div class="step-box">
+            <h3 class="text-xl font-medium text-white mb-2">Phase 3: Spatial Projection (PostGIS)</h3>
+            <p class="text-gray-400 font-light leading-relaxed mb-4">
+              Once verified, the coordinate is stored in PostgreSQL. The system uses <span class="text-white">Tobler's Hiking Function</span> to calculate the maximum theoretical walking distance from that point based on elapsed time and terrain elevation logic, generating a search radius polygon.
+            </p>
+          </div>
+
+          <div class="step-box">
+            <h3 class="text-xl font-medium text-white mb-2">Phase 4: Tactical Distribution</h3>
+            <p class="text-gray-400 font-light leading-relaxed">
+              The verified data is pushed over WebSockets directly to the Command Dashboard. The UI immediately renders a glowing red reticle at the exact coordinate, bypassing standard polling delays.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right Column: Glossary Table -->
+      <div>
+        <h2 class="text-2xl font-medium text-white mb-12 uppercase tracking-widest text-sm">2. System Terminology (Glossary)</h2>
+        
+        <div class="tech-panel overflow-hidden">
+          <table>
+            <thead>
+              <tr>
+                <th width="30%">Nomenclature</th>
+                <th>Definition & Context</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="text-white font-medium">LKP</span></td>
+                <td>
+                  <span class="text-gray-400 font-light text-sm block mb-1">Last Known Position</span>
+                  <span class="text-gray-600 text-xs">The verified starting coordinate used by the ML model to begin plotting the search radius.</span>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="text-red-400 font-medium">[CRIT] / P0</span></td>
+                <td>
+                  <span class="text-gray-400 font-light text-sm block mb-1">Priority Zero (Critical Match)</span>
+                  <span class="text-gray-600 text-xs">A tip that has been passed through the DeepFace neural network and yielded a high-confidence biometric match. It triggers red alerts on the dashboard.</span>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="text-white font-medium">Tobler's Radius</span></td>
+                <td>
+                  <span class="text-gray-400 font-light text-sm block mb-1">Mathematical Spatial Boundary</span>
+                  <span class="text-gray-600 text-xs">A non-circular polygon on the map calculated using Tobler's hiking function. It shows exactly how far a human could walk considering the local terrain and time elapsed since LKP.</span>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="text-white font-medium">LoRa MESH</span></td>
+                <td>
+                  <span class="text-gray-400 font-light text-sm block mb-1">Long Range Offline Network</span>
+                  <span class="text-gray-600 text-xs">A decentralized radio network used by responders when standard cell towers fail. Nodes relay tiny 15-byte GPS packets to each other until they hit the Command Center.</span>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="text-white font-medium">C4I</span></td>
+                <td>
+                  <span class="text-gray-400 font-light text-sm block mb-1">Command, Control, Comm, Computers, Intel</span>
+                  <span class="text-gray-600 text-xs">The military terminology for the overall architecture of this dashboard. It acts as the brain of the search operation.</span>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="text-white font-medium">PuLP Optimizer</span></td>
+                <td>
+                  <span class="text-gray-400 font-light text-sm block mb-1">Linear Programming Engine</span>
+                  <span class="text-gray-600 text-xs">An upcoming feature. A backend python algorithm that calculates the most efficient way to assign available volunteers to open search sectors based on real-time distances.</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

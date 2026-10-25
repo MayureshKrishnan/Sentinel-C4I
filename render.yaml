@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: sentinel-c4i-core
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: "pip install -r sentinel-backend/requirements.txt"
+    startCommand: "cd sentinel-backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHONPATH
+        value: "sentinel-backend:sentinel-engine"
+      - key: PYTHON_VERSION
+        value: 3.10.12

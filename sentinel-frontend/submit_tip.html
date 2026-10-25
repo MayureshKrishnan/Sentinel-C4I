@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Civilian Tip - Sentinel V2 C4I</title>
+    
+    <!-- Leaflet CSS for the mini-map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    body {
+      margin: 0;
+      background-color: #0a0a0c;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+      overflow-x: hidden;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    
+
+    .tech-panel {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(10, 10, 10, 0.98));
+      border: 1px solid rgba(192, 192, 192, 0.25);
+      box-shadow: inset 0 0 30px rgba(192, 192, 192, 0.03);
+      border-radius: 6px;
+      position: relative;
+    }
+    
+    .tech-panel::before, .tech-panel::after {
+      content: '';
+      position: absolute;
+      width: 8px; height: 8px;
+      border: 1px solid rgba(255,255,255,0.5);
+      pointer-events: none;
+      z-index: 30;
+    }
+    .tech-panel::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+    .tech-panel::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+    #minimap {
+      width: 100%;
+      height: 320px;
+      background-color: #050505;
+      border-radius: 8px;
+      border: 1px solid #374151;
+    }
+
+    .input-dark {
+      background-color: #0d1117;
+      border: 1px solid #30363d;
+      color: #ffffff;
+    }
+    .input-dark:focus {
+      outline: none;
+      border-color: #d4d4d8;
+    }
+    select option { background-color: #0d1117; color: #ffffff; }
+    </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-[#050505] text-[#f4f4f5] flex flex-col">
+
+    <!-- Seamless Sticky Navbar -->
+          <!-- Top Navigation Bar (Consistent Across Entire Sentinel V2 Platform) -->
+  <header class="h-16 w-full border-b border-zinc-800 flex items-center justify-between px-6 bg-[#080808]/95 backdrop-blur sticky top-0 z-50 shrink-0">
+    <div class="flex items-center gap-3 shrink-0">
+      <div class="w-2.5 h-2.5 rounded-full bg-white animate-pulse shadow-[0_0_10px_#ffffff]"></div>
+      <a href="index.html?v=3" class="font-bold tracking-widest uppercase text-sm sm:text-base text-white flex items-center gap-2 hover:opacity-90 transition whitespace-nowrap">
+        Sentinel V2 <span class="hidden sm:inline-block text-xs font-mono px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-700 font-semibold tracking-normal">MAHARASHTRA POLICE C4I CORE</span>
+      </a>
+    </div>
+    
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-xs font-mono tracking-widest uppercase items-center shrink-0">
+      <a href="index.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Home</a>
+      <a href="dashboard.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Command Dashboard</a>
+      <a href="submit_tip.html?v=3" class="text-white border-b-2 border-white pb-1 font-bold whitespace-nowrap">Public Ingress Portal</a>
+      <a href="pipeline.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Pipeline</a>
+      <a href="architecture.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Schema</a>
+    </nav>
+
+    <div class="flex items-center gap-4 shrink-0">
+      <a href="dashboard.html?v=3#bsa-modal" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-500 text-zinc-100 text-xs font-mono font-bold rounded flex items-center gap-1.5 transition shadow whitespace-nowrap">
+        <span>⚖️</span> BSA Sec-63 Certificate
+      </a>
+      <div class="text-right hidden sm:block whitespace-nowrap">
+        <div class="text-xs font-mono text-white tracking-wider font-bold">STATION: CMD-OP1</div>
+        <div class="text-[11px] text-emerald-400 font-mono uppercase flex items-center gap-1.5 justify-end font-semibold">
+          <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>C4I Operational
+        </div>
+      </div>
+    </div>
+  </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-4 py-8">
+        
+        <div class="mb-6 text-center">
+            <h1 class="text-2xl font-bold tracking-wider uppercase text-white mb-2">Crowdsourced Intelligence Submission</h1>
+            <p class="text-xs text-zinc-400 max-w-xl mx-auto leading-relaxed">
+                Your report will be processed in real-time by the <strong>3-Layer Credibility Engine</strong> (Spatial Calculus &rarr; Scikit-Learn DBSCAN &rarr; Heuristic Triage) and routed directly to the Active Investigation Team.
+            </p>
+        </div>
+
+        <form id="tipForm" class="tech-panel p-6 sm:p-8 space-y-6">
+            
+            <!-- Target Case Selection -->
+            <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-lg">
+                <label class="block text-xs font-bold tracking-widest uppercase text-zinc-300 mb-2 flex items-center justify-between">
+                    <span>1. Select Active Investigation Folder *</span>
+                    <span id="caseLoadingStatus" class="text-[10px] text-zinc-500 font-normal">Loading cases...</span>
+                </label>
+                <select id="caseSelect" required class="w-full input-dark rounded-lg p-3 text-sm font-mono text-white">
+                    <option value="">Fetching active cases from database...</option>
+                </select>
+                <div id="caseContextBanner" class="mt-2 text-xs font-mono text-zinc-400 bg-black/70 p-2.5 rounded border border-zinc-800 flex justify-between items-center hidden">
+                    <div>
+                        <span class="text-white font-bold" id="ctxName">--</span>
+                        <span class="text-zinc-500 ml-2">LKP: <span id="ctxLkp" class="text-zinc-300">--</span></span>
+                    </div>
+                    <span id="ctxCoords" class="text-white text-[11px] font-bold">--</span>
+                </div>
+            </div>
+
+            <!-- Reporter Info -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Reporter Identity</label>
+                    <select id="reporterType" class="w-full input-dark rounded-lg p-3 text-sm">
+                        <option value="citizen">Public Citizen (Anonymous)</option>
+                        <option value="volunteer">Volunteer Search Party</option>
+                        <option value="transit">Transit / Railway Staff</option>
+                    </select>
+                </div>
+                <div>
+                    <label id="reporterNameLabel" class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Reporter Name (Optional)</label>
+                    <input type="text" id="reporterName" class="w-full input-dark rounded-lg p-3 text-sm" placeholder="Leave blank to remain completely anonymous">
+                </div>
+            </div>
+
+            <!-- Map Location Picker -->
+            <div>
+                <div class="flex flex-col sm:flex-row justify-between sm:items-end mb-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-white uppercase tracking-wider">2. Pinpoint Sighting Location *</label>
+                        <span class="text-[11px] text-gray-500">Click anywhere on the map or search an address</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="addressSearch" class="input-dark rounded-lg px-3 py-1.5 text-xs w-48 sm:w-60" placeholder="e.g. Dadar Flower Market, Mumbai">
+                        <button type="button" id="btnSearchAddress" class="bg-zinc-900 hover:bg-zinc-800 text-white font-mono text-xs px-3 py-1.5 rounded-lg border border-zinc-700 transition">Search</button>
+                        <button type="button" id="btnLocateMe" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-mono text-xs px-2.5 py-1.5 rounded-lg border border-zinc-700 transition" title="Use My Current GPS Location">📍 GPS</button>
+                    </div>
+                </div>
+
+                <div id="minimap" class="mb-3"></div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 uppercase font-mono mb-1">Pinned Latitude</label>
+                        <input type="text" id="lat" placeholder="Click map to set" readonly required class="w-full input-dark rounded-lg p-2.5 text-white font-mono text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 uppercase font-mono mb-1">Pinned Longitude</label>
+                        <input type="text" id="lng" placeholder="Click map to set" readonly required class="w-full input-dark rounded-lg p-2.5 text-white font-mono text-xs">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signal & Sighting Time -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">Signal Ingress Type</label>
+                    <select id="signalType" class="w-full input-dark rounded-lg p-3 text-sm">
+                        <option value="Visual Sighting">Direct Visual Sighting</option>
+                        <option value="CCTV Match">CCTV / Security Camera Match</option>
+                        <option value="Overheard Conversation">Overheard Information</option>
+                        <option value="Found Personal Item">Found Belongings / Clue</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">Estimated Sighting Time</label>
+                    <input type="datetime-local" id="sightingTime" required class="w-full input-dark rounded-lg p-3 text-sm text-zinc-200">
+                </div>
+            </div>
+
+            <!-- Detailed Description -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                        Sighting Details & Context *
+                    </label>
+                    <span class="text-[11px] text-zinc-400 font-mono">Supports English, मराठी (Marathi), हिंदी, Hinglish</span>
+                </div>
+
+                <!-- Quick Indic Demo Fillers (Black, Metal, Silver) -->
+                <div class="flex flex-wrap gap-1.5 mb-2 font-mono text-[11px]">
+                    <span class="text-zinc-500 self-center mr-1">Quick Demo:</span>
+                    <button type="button" onclick="fillIndicDemo('mr')" class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-600 text-zinc-200 rounded transition font-semibold">
+                        🇮🇳 मराठी (दादर फूल मार्केट)
+                    </button>
+                    <button type="button" onclick="fillIndicDemo('hi')" class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-600 text-zinc-200 rounded transition font-semibold">
+                        🇮🇳 Hinglish (Bandra auto stand)
+                    </button>
+                    <button type="button" onclick="fillIndicDemo('en')" class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-600 text-zinc-200 rounded transition font-semibold">
+                        🇬🇧 English (Shivaji Park)
+                    </button>
+                </div>
+
+                <textarea id="message" rows="3" required class="w-full input-dark rounded-lg p-3 text-sm" placeholder="Provide details in English, Marathi (मराठी), Hindi, or Hinglish..."></textarea>
+            </div>
+
+            <!-- Anti-Bot Verification -->
+            <div class="bg-zinc-950 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-zinc-800">
+                <div>
+                    <p class="text-xs font-bold text-white uppercase tracking-wider">Human Verification</p>
+                    <p class="text-[11px] text-zinc-400">Protects police systems from automated bot spam.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span id="mathQuestion" class="font-mono text-base font-bold bg-black px-4 py-1.5 rounded border border-zinc-700 text-white"></span>
+                    <input type="number" id="mathAnswer" required class="w-20 input-dark rounded p-1.5 text-center font-mono text-base text-white" placeholder="=">
+                </div>
+            </div>
+
+            <!-- Legal Compliance -->
+            <div class="text-center text-[10px] text-zinc-500 leading-relaxed border-t border-zinc-800/80 pt-4">
+                Compliant with India's <strong>Digital Personal Data Protection (DPDP) Act, 2023</strong>. <br>
+                Submissions are logged into the immutable case ledger for official law enforcement search operations.
+            </div>
+
+            <!-- Submit Button (Crisp White on Black Metal) -->
+            <button type="submit" id="btnSubmit" class="w-full bg-white hover:bg-zinc-200 text-black font-bold py-3.5 rounded-lg transition tracking-widest uppercase text-xs shadow-xl flex justify-center items-center gap-2 border border-zinc-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                Transmit Tip to Sentinel AI Core
+            </button>
+
+            <!-- Status Response Message -->
+            <div id="statusMsg" class="hidden text-center text-xs font-mono p-4 rounded-lg"></div>
+        </form>
+    </main>
+    <script>
+        const API_BASE = (window.location.origin && !window.location.origin.startsWith("file")) ? `${window.location.origin}/api/v1` : "http://127.0.0.1:8000/api/v1";
+        let loadedCases = [];
+        let lkpMarker = null;
+        let tipMarker = null;
+
+        // --- QUICK INDIC DEMO FILLERS ---
+        function fillIndicDemo(lang) {
+            if (lang === 'mr') {
+                document.getElementById('message').value = "दादर पश्चिम फूल मार्केट जवळ निळा शर्ट घातलेला मुलगा दिसला, खूप घाबरलेला वाटत होता.";
+                document.getElementById('lat').value = "19.0192";
+                document.getElementById('lng').value = "72.8430";
+                if (tipMarker) map.removeLayer(tipMarker);
+                tipMarker = L.marker([19.0192, 72.8430]).addTo(map);
+                map.setView([19.0192, 72.8430], 15);
+            } else if (lang === 'hi') {
+                document.getElementById('message').value = "Maine is ladke ko Bandra station auto stand ke paas dekha, white kurta aur brown chashma pehna tha.";
+                document.getElementById('lat').value = "19.0598";
+                document.getElementById('lng').value = "72.8415";
+                if (tipMarker) map.removeLayer(tipMarker);
+                tipMarker = L.marker([19.0598, 72.8415]).addTo(map);
+                map.setView([19.0598, 72.8415], 15);
+            } else {
+                document.getElementById('message').value = "Saw boy matching description near Shivaji Park entrance walking south towards station.";
+                document.getElementById('lat').value = "19.0255";
+                document.getElementById('lng').value = "72.8412";
+                if (tipMarker) map.removeLayer(tipMarker);
+                tipMarker = L.marker([19.0255, 72.8412]).addTo(map);
+                map.setView([19.0255, 72.8412], 15);
+            }
+        }
+
+        // --- MAP INITIALIZATION ---
+        const map = L.map('minimap').setView([19.0178, 72.8478], 13);
+        
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            attribution: '&copy; Esri'
+        }).addTo(map);
+
+        map.on('click', function(e) {
+            const lat = e.latlng.lat.toFixed(5);
+            const lng = e.latlng.lng.toFixed(5);
+            
+            document.getElementById('lat').value = lat;
+            document.getElementById('lng').value = lng;
+
+            if (tipMarker) map.removeLayer(tipMarker);
+            
+            tipMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'custom-tip',
+                    html: '<div class="w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-ping"></div>',
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
+                })
+            }).addTo(map);
+        });
+
+        // --- FETCH ACTIVE CASES ---
+        async function loadCases() {
+            const select = document.getElementById('caseSelect');
+            const statusLabel = document.getElementById('caseLoadingStatus');
+
+            try {
+                const res = await fetch(`${API_BASE}/cases`);
+                const data = await res.json();
+                
+                if (data.status === "success" && data.cases.length > 0) {
+                    loadedCases = data.cases;
+                    select.innerHTML = '';
+                    
+                    data.cases.forEach((c, idx) => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.innerText = `[${c.id}] ${c.name} — LKP: ${c.lkp}`;
+                        select.appendChild(opt);
+                    });
+
+                    statusLabel.innerText = `${data.cases.length} active investigations`;
+                    updateCaseContext(data.cases[0].id);
+                } else {
+                    select.innerHTML = '<option value="">No active cases found</option>';
+                    statusLabel.innerText = "No cases in DB";
+                }
+            } catch (err) {
+                console.warn("Could not reach backend cases:", err);
+                select.innerHTML = '<option value="CASE-01">[CASE-01] Arjun Mehta (Dadar)</option>';
+                statusLabel.innerText = "Offline fallback";
+            }
+        }
+
+        function updateCaseContext(caseId) {
+            const c = loadedCases.find(x => x.id === caseId);
+            const banner = document.getElementById('caseContextBanner');
+            if (!c) {
+                banner.classList.add('hidden');
+                return;
+            }
+
+            banner.classList.remove('hidden');
+            document.getElementById('ctxName').innerText = `${c.name} (${c.age} yrs)`;
+            document.getElementById('ctxLkp').innerText = c.lkp;
+            document.getElementById('ctxCoords').innerText = `${c.lkp_lat}, ${c.lkp_lng}`;
+
+            // Plot LKP on Map
+            if (c.lkp_lat && c.lkp_lng) {
+                if (lkpMarker) map.removeLayer(lkpMarker);
+                
+                lkpMarker = L.marker([c.lkp_lat, c.lkp_lng], {
+                    icon: L.divIcon({
+                        className: 'lkp-icon',
+                        html: `<div class="bg-zinc-950 text-zinc-200 border border-zinc-400 text-[9px] font-mono px-1 rounded whitespace-nowrap">LKP: ${c.name}</div>`,
+                        iconSize: [80, 20],
+                        iconAnchor: [40, 10]
+                    })
+                }).addTo(map);
+
+                map.setView([c.lkp_lat, c.lkp_lng], 14);
+            }
+        }
+
+        document.getElementById('caseSelect').addEventListener('change', (e) => {
+            updateCaseContext(e.target.value);
+        });
+
+        // --- Geolocation: Locate Me Button ---
+        document.getElementById('btnLocateMe').addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                alert("Geolocation not supported by your browser.");
+                return;
+            }
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const lat = pos.coords.latitude.toFixed(5);
+                const lng = pos.coords.longitude.toFixed(5);
+                document.getElementById('lat').value = lat;
+                document.getElementById('lng').value = lng;
+                map.setView([lat, lng], 16);
+                if (tipMarker) map.removeLayer(tipMarker);
+                tipMarker = L.marker([lat, lng]).addTo(map);
+            }, (err) => {
+                alert("Could not access your location: " + err.message);
+            });
+        });
+
+        // --- Address Search ---
+        document.getElementById('btnSearchAddress').addEventListener('click', async () => {
+            const q = document.getElementById('addressSearch').value.trim();
+            if (!q) return;
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`);
+                const results = await res.json();
+                if (results && results.length > 0) {
+                    const lat = parseFloat(results[0].lat).toFixed(5);
+                    const lng = parseFloat(results[0].lon).toFixed(5);
+                    document.getElementById('lat').value = lat;
+                    document.getElementById('lng').value = lng;
+                    map.setView([lat, lng], 15);
+                    if (tipMarker) map.removeLayer(tipMarker);
+                    tipMarker = L.marker([lat, lng]).addTo(map);
+                } else {
+                    alert("Location not found. Please click directly on the map.");
+                }
+            } catch (e) {
+                alert("Search service currently unavailable.");
+            }
+        });
+
+        // --- Anti-Bot Math CAPTCHA ---
+        let expectedAnswer = 0;
+        function generateMathQuestion() {
+            const num1 = Math.floor(Math.random() * 12) + 1;
+            const num2 = Math.floor(Math.random() * 12) + 1;
+            expectedAnswer = num1 + num2;
+            document.getElementById('mathQuestion').innerText = `${num1} + ${num2}`;
+        }
+        generateMathQuestion();
+
+        // Default Sighting Time to Now
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('sightingTime').value = now.toISOString().slice(0, 16);
+
+        // --- Form Submission ---
+        document.getElementById('tipForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const statusMsg = document.getElementById('statusMsg');
+            const userAns = parseInt(document.getElementById('mathAnswer').value);
+
+            if (userAns !== expectedAnswer) {
+                statusMsg.className = "text-center font-mono text-xs p-3 rounded-lg bg-red-950/80 border border-red-800 text-red-200 mt-4";
+                statusMsg.innerText = "CAPTCHA FAILED: Incorrect math verification answer.";
+                statusMsg.classList.remove('hidden');
+                generateMathQuestion();
+                document.getElementById('mathAnswer').value = "";
+                return;
+            }
+
+            const caseId = document.getElementById('caseSelect').value;
+            let sourceVal = document.getElementById('reporterName').value.trim();
+            if (!sourceVal) sourceVal = "Anonymous Citizen";
+
+            const payload = {
+                case_id: caseId,
+                source: sourceVal,
+                signal_type: document.getElementById('signalType').value,
+                sighting_time: document.getElementById('sightingTime').value,
+                lat: parseFloat(document.getElementById('lat').value),
+                lng: parseFloat(document.getElementById('lng').value),
+                message: document.getElementById('message').value.trim(),
+                score: document.getElementById('reporterType').value === 'transit' ? 80 : 50
+            };
+
+            const submitBtn = document.getElementById('btnSubmit');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Processing through Spatial Physics & DBSCAN...";
+
+            try {
+                const response = await fetch(`${API_BASE}/tips/inject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.detail || "Server error");
+
+                const tip = result.tip;
+                statusMsg.className = "text-center font-mono text-xs p-4 rounded-lg bg-emerald-950/80 border border-emerald-700 text-emerald-200 mt-4";
+                statusMsg.innerHTML = `
+                    <div class="font-bold text-sm">✅ TIP INGESTED &amp; BROADCAST TO DASHBOARD!</div>
+                    <div class="mt-1 text-[11px] text-gray-300">
+                        Assigned ID: <span class="text-white font-bold">${tip.id}</span> | 
+                        Score: <span class="text-white font-bold">${tip.score}% (${tip.tier})</span> | 
+                        Distance from LKP: <span class="text-white font-bold">${tip.distance_km} km</span>
+                    </div>
+                    <div class="mt-1 text-[10px] text-emerald-400 italic">${tip.reason}</div>
+                `;
+                statusMsg.classList.remove('hidden');
+
+                // Reset inputs
+                document.getElementById('message').value = "";
+                document.getElementById('mathAnswer').value = "";
+                generateMathQuestion();
+
+            } catch (err) {
+                statusMsg.className = "text-center font-mono text-xs p-3 rounded-lg bg-red-950/80 border border-red-800 text-red-200 mt-4";
+                statusMsg.innerText = "Error submitting tip: " + err.message;
+                statusMsg.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    Transmit Tip to Sentinel AI Core
+                `;
+            }
+        });
+
+        // Initialize
+        loadCases();
+    </script>
+</body>
+</html>

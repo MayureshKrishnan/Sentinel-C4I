@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta charset="UTF-8">
+  <title>Sentinel V2 | Spatial Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0a0a0c;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+      overflow-x: hidden;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    /* Seamless Sticky Navbar */
+    
+    
+    /* Scrolled State for Navbar */
+    
+
+    /* Radar Styles */
+    #hero-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      perspective: 1000px;
+      z-index: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .radar-assembly {
+      position: absolute;
+      top: 50%;
+      left: 75%;
+      width: 800px;
+      height: 800px;
+      transform: translate(-50%, -50%);
+      transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-style: preserve-3d;
+    }
+
+    .docked .radar-assembly {
+      top: 35px;
+      left: calc(100vw - 250px);
+      width: 60px;
+      height: 60px;
+      z-index: 60; /* Above navbar when docked */
+    }
+
+    .parallax-wrapper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transition: transform 0.1s ease-out;
+      transform-style: preserve-3d;
+    }
+
+    .radar-base {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: #0a0a0c;
+      border: 1px solid rgba(192, 192, 192, 0.25); box-shadow: inset 0 0 30px rgba(192, 192, 192, 0.03);
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), inset 0 2px 0 rgba(255, 255, 255, 0.1), 0 20px 40px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+    }
+
+    .radar-grid {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-position: center;
+    }
+
+    .radar-beam {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, transparent 70%, rgba(255, 255, 255, 0.02) 80%, rgba(255, 255, 255, 0.2) 100%);
+      animation: spin 4s linear infinite;
+    }
+
+    .distance-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) translateZ(40px);
+      width: 40px;
+      height: 40px;
+      transition: opacity 0.5s;
+    }
+    
+    .crosshair-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px;
+      height: 6px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #ffffff, 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    .crosshair-line { position: absolute; background: rgba(255, 255, 255, 0.5); }
+    .cl-top { top: 0; left: 19px; width: 2px; height: 12px; }
+    .cl-bottom { bottom: 0; left: 19px; width: 2px; height: 12px; }
+    .cl-left { top: 19px; left: 0; width: 12px; height: 2px; }
+    .cl-right { top: 19px; right: 0; width: 12px; height: 2px; }
+
+    .data-badge {
+      position: absolute;
+      background: rgba(15, 15, 18, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      color: #a1a1aa;
+      white-space: nowrap;
+      transition: opacity 0.5s;
+    }
+    .badge-1 { top: 20%; left: -10%; transform: translateZ(30px); }
+    .badge-2 { bottom: 25%; right: -5%; transform: translateZ(50px); }
+    
+    .docked .data-badge, .docked .crosshair { opacity: 0; }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .content-layer {
+      position: relative;
+      z-index: 10;
+      padding-top: 35vh;
+      pointer-events: auto;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-[#050505] text-[#f4f4f5]">
+
+  <!-- Seamless Navigation Bar -->
+        <!-- Top Navigation Bar (Consistent Across Entire Sentinel V2 Platform) -->
+  <header class="h-16 w-full border-b border-zinc-800 flex items-center justify-between px-6 bg-[#080808]/95 backdrop-blur sticky top-0 z-50 shrink-0">
+    <div class="flex items-center gap-3 shrink-0">
+      <div class="w-2.5 h-2.5 rounded-full bg-white animate-pulse shadow-[0_0_10px_#ffffff]"></div>
+      <a href="index.html?v=3" class="font-bold tracking-widest uppercase text-sm sm:text-base text-white flex items-center gap-2 hover:opacity-90 transition whitespace-nowrap">
+        Sentinel V2 <span class="hidden sm:inline-block text-xs font-mono px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-700 font-semibold tracking-normal">MAHARASHTRA POLICE C4I CORE</span>
+      </a>
+    </div>
+    
+    <nav class="hidden md:flex gap-6 lg:gap-8 text-xs font-mono tracking-widest uppercase items-center shrink-0">
+      <a href="index.html?v=3" class="text-white border-b-2 border-white pb-1 font-bold whitespace-nowrap">Home</a>
+      <a href="dashboard.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Command Dashboard</a>
+      <a href="submit_tip.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Public Ingress Portal</a>
+      <a href="pipeline.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Pipeline</a>
+      <a href="architecture.html?v=3" class="text-zinc-400 hover:text-white transition py-1 whitespace-nowrap">Schema</a>
+    </nav>
+
+    <div class="flex items-center gap-4 shrink-0">
+      <a href="dashboard.html?v=3#bsa-modal" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-500 text-zinc-100 text-xs font-mono font-bold rounded flex items-center gap-1.5 transition shadow whitespace-nowrap">
+        <span>⚖️</span> BSA Sec-63 Certificate
+      </a>
+      <div class="text-right hidden sm:block whitespace-nowrap">
+        <div class="text-xs font-mono text-white tracking-wider font-bold">STATION: CMD-OP1</div>
+        <div class="text-[11px] text-emerald-400 font-mono uppercase flex items-center gap-1.5 justify-end font-semibold">
+          <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>C4I Operational
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Premium UI Radar -->
+  <div id="hero-container">
+    <div class="radar-assembly" id="radar-container">
+      <div class="parallax-wrapper" id="parallax-wrapper">
+        <div class="radar-base">
+          <div class="radar-grid"></div>
+          <div class="distance-ring" style="width: 80%; height: 80%;"></div>
+          <div class="distance-ring" style="width: 50%; height: 50%;"></div>
+          <div class="distance-ring" style="width: 20%; height: 20%;"></div>
+          <div class="radar-beam"></div>
+        </div>
+        <div class="crosshair">
+          <div class="crosshair-center"></div>
+          <div class="crosshair-line cl-top"></div>
+          <div class="crosshair-line cl-bottom"></div>
+          <div class="crosshair-line cl-left"></div>
+          <div class="crosshair-line cl-right"></div>
+        </div>
+        <div class="data-badge badge-1"><span class="text-white">LKP_COORD</span> // 19.0760 N, 72.8777 E</div>
+        <div class="data-badge badge-2 flex items-center gap-2">
+          <div class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div> SCANNING 72H RADIUS
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <main class="content-layer px-16 max-w-7xl mx-auto">
+    <!-- Hero Text -->
+    <div class="max-w-2xl h-[65vh] flex flex-col justify-center pb-32">
+      <h1 class="text-7xl font-semibold tracking-tighter mb-6 leading-tight text-white">
+          Track the missing.<br><span class="text-gray-500">Secure the perimeter.</span>
+        </h1>
+      <p class="text-gray-400 text-xl leading-relaxed mb-12 font-light">
+          A decision-support system bridging offline mesh hardware, biometric AI, and spatial logic to coordinate police and SAR units in real-time.
+        </p>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="py-32 border-t border-gray-900 relative z-10 bg-black/50 backdrop-blur-sm rounded-3xl p-12 mt-32">
+      <h2 class="text-4xl font-light mb-16 text-white text-center">Core Capabilities</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="p-8 border border-gray-800 rounded-2xl bg-black hover:border-gray-600 transition-colors">
+          <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-6">
+            <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-4">Spatial Intelligence</h3>
+          <p class="text-gray-400 font-light leading-relaxed">Advanced PostGIS integration with Tobler's hiking function to mathematically calculate real-time walk radiuses from the Last Known Position.</p>
+        </div>
+        
+        <div class="p-8 border border-gray-800 rounded-2xl bg-black hover:border-gray-600 transition-colors">
+          <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-6">
+            <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-4">Offline Resilience</h3>
+          <p class="text-gray-400 font-light leading-relaxed">Built for the hardest environments. Hardware-level LoRa mesh networking ensures critical tips are transmitted even when cellular infrastructure fails.</p>
+        </div>
+        
+        <div class="p-8 border border-gray-800 rounded-2xl bg-black hover:border-gray-600 transition-colors">
+          <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-6">
+            <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-4">Biometric Triage</h3>
+          <p class="text-gray-400 font-light leading-relaxed">DeepFace integration automatically scans incoming CCTV tips and image uploads, filtering out noise and flagging P0 critical matches instantly.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tech Stack / Database Schema Teaser -->
+    <div class="py-32 border-t border-gray-900 flex flex-col md:flex-row items-center gap-16 relative z-10 bg-black/50 backdrop-blur-sm rounded-3xl p-12 mt-12">
+      <div class="flex-1">
+        <h2 class="text-4xl font-light mb-6 text-white">Military-Grade Architecture</h2>
+        <p class="text-gray-400 text-lg leading-relaxed font-light mb-8">
+          Sentinel V2 isn't just a dashboard. It is a high-performance C4I (Command, Control, Communications, Computers, and Intelligence) system backed by an uncompromising technology stack.
+        </p>
+        <div class="flex gap-4">
+          <a href="architecture.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-200 transition-colors text-sm tracking-wide">
+            View System Schema &rarr;
+          </a>
+        </div>
+      </div>
+      <div class="flex-1 w-full bg-gray-900 rounded-2xl border border-gray-800 p-8 font-mono text-sm text-gray-400 shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[length:100%_4px] pointer-events-none"></div>
+        <div class="text-gray-600 mb-4">// STACK_DUMP</div>
+        <div><span class="text-white">FRONTEND:</span> HTML5, TailwindCSS, Leaflet.js</div>
+        <div class="mt-2"><span class="text-white">BACKEND:</span> FastAPI (Python), Uvicorn</div>
+        <div class="mt-2"><span class="text-white">DATABASE:</span> PostgreSQL + PostGIS</div>
+        <div class="mt-2"><span class="text-white">HARDWARE:</span> NodeMCU, LoRaWAN</div>
+        <div class="mt-2"><span class="text-white">AI/ML:</span> DeepFace (VGG-Face)</div>
+        <div class="mt-8 text-white animate-pulse">_</div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-gray-900 py-12 text-center text-gray-600 text-sm font-mono mt-20 relative z-10 bg-black">
+    &copy; 2026 Sentinel V2 Command Systems. All rights reserved.
+  </footer>
+
+  <script>
+    const wrapper = document.getElementById('parallax-wrapper');
+    const container = document.getElementById('hero-container');
+    // navbar ref removed
+
+    // 1. Mouse Parallax
+    document.addEventListener('mousemove', (e) => {
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if(container.classList.contains('docked')) return;
+
+      const xAxis = (window.innerWidth / 2 - e.pageX) / 30; 
+      const yAxis = (window.innerHeight / 2 - e.pageY) / 30; 
+      wrapper.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+    });
+
+    // 2. Scroll Docking & Navbar effect
+    window.addEventListener('scroll', () => {
+      
+
+      if (window.scrollY > 150) {
+        container.classList.add('docked');
+        wrapper.style.transform = `rotateY(0deg) rotateX(0deg)`;
+      } else {
+        container.classList.remove('docked');
+      }
+    });
+  </script>
+</body>
+</html>
