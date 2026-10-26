@@ -39,3 +39,8 @@ Thumbs.db
 # Cloudflare & temporary binaries
 cloudflared.exe
 *.log
+
+
+# Archived Legacy Folders & Zips
+archives/
+*.zip
